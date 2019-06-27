@@ -14,7 +14,7 @@ export default class HomeView extends Component {
     ] };*/
     state = { 
         photos: [],
-        maxPhotos: 25,
+        maxPhotos: 25,           //Max number of photos.
         coordClusterRange: 0.01, //distance range within which photos belong to same cluster
         timeClusterRange:  86400 //time range (in seconds) within which photos belong to same cluster
     };
