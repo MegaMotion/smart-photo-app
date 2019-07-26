@@ -10,7 +10,8 @@ import {
     FlatList,
     TouchableOpacity,
     TouchableHighlight,
-    Modal
+    Modal,
+    Image
 } from 'react-native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import { Actions } from 'react-native-router-flux';
@@ -186,7 +187,7 @@ export default class LoginWithQrCode extends Component {
                    renderPhotos() {
                        const queryParams = { eventId: 'event_2019_eugene-make-a-band' };
                        return (
-                           <View style={styles.modalContainer}>
+                           <View style={styles.container}>
                                <Modal
                                    animationType="slide"
                                    transparent={false}
@@ -197,15 +198,22 @@ export default class LoginWithQrCode extends Component {
                                >
                                    <View style={styles.modalContainer}>
                                        <Text style={styles.topViewText}>{this.state.currentArtistName}</Text>
-                                       <Text style={styles.topViewText}>{this.state.currentArtistId}</Text>
-                                       <Text style={styles.topViewText}>{this.state.currentArtistImageUrl}</Text>
-                                       
+                                       <Text style={styles.mediumText}>{this.state.currentArtistId}</Text>
+                                       <Image 
+                                            style={styles.artistImage} 
+                                            source={{ uri: this.state.currentArtistImageUrl }} 
+                                        />
                                        <TouchableHighlight
-                                           onPress={() => {
-                                               this.setModalVisible(!this.state.modalVisible);
-                                           }}
+                                           
                                        >
-                                           <Text style={styles.topViewText}>Back</Text>
+                                           <Button 
+                                                style={styles.buttonText}
+                                                onPress={() => {
+                                                    this.setModalVisible(!this.state.modalVisible);
+                                                }}
+                                            >
+                                                Back
+                                            </Button>
                                        </TouchableHighlight>
                                    </View>
                                </Modal>
@@ -411,7 +419,15 @@ const styles = StyleSheet.create({
     modalContainer: {
         flex: 1,
         paddingTop: 8,
-        backgroundColor: dark
+        backgroundColor: dark,
+        justifyContent: 'center',
+        alignItems: 'center'
+    },
+    artistImage: {
+        height: 300,
+        width: 300,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     buttonText: {
         fontSize: 21,
