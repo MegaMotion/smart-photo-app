@@ -7,6 +7,8 @@ export const API_BASE = 'https://dev-next-api.fanosity.com';
 export const FANOSITY_GRAPHQL_URL = `${API_BASE}/graphql`;
 export const FANOSITY_AUTH_URL = `${API_BASE}/account`;
 
+export const CHRIS_TEST_DB_URL = 'http://10.0.0.218:3306';
+
 // Used for printing tickets
 export const LOCAL_BOOTH_CONTROL_API = 'http://localhost:3001/api';
 

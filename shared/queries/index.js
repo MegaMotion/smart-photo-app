@@ -73,3 +73,28 @@ export const voteForElementAward = gql`
         }
     }
 `;
+
+
+
+export const bandQuery = gql`
+    query getBandsByEvent($eventId: String!) {
+        bands: getBandsByEvent(eventId: $eventId) {
+            name
+            bandId
+        }        
+    }
+`;
+
+
+export const musicianQuery = gql`
+    query musicianQuery($eventId: String!) {
+        musicians: getMusiciansByEvent(eventId: $eventId) {
+            name
+            musicianId
+            primaryImage {
+                url
+            }
+            bandRoles
+        }        
+    }
+`;
