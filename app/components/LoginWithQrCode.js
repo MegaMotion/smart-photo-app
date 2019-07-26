@@ -25,6 +25,7 @@ import { getCurrentEventsQuery } from '../../shared/queries';
 import { currentEventsQuery } from '../../web/admin/queries/events'
 import { bandQuery } from '../../shared/queries';
 import { musicianQuery } from '../../shared/queries';
+import { bandMusicianQuery } from '../../shared/queries';
 
 import { dark, light, highlight, success } from '../colors';
 
@@ -34,7 +35,7 @@ const TEST_BEND_MAB = 'event_2015_bend-make-a-band_264269456487494654_7d5c5f0a28
 // QR Scan mode
 const MODE_SCAN = 'MODE_SCAN';
 const MODE_MANUAL = 'MODE_MANUAL';
-const MODE_PHOTOS = 'MODE_PHOTOS';
+const MODE_BAND_BROWSER = 'MODE_BAND_BROWSER';
 
 
 export default class LoginWithQrCode extends Component {
@@ -43,10 +44,17 @@ export default class LoginWithQrCode extends Component {
                        enteredCode: '',
                        loading: false,
                        eventId: '',
-                       modalVisible: false,
-                       currentArtistName: '',
-                       currentArtistId: '',
-                       currentArtistImageUrl: ''
+                       bandListVisible: false,
+                       musicianPageVisible: false,
+                       currentMusicianId: '',
+                       currentMusicianName: '',
+                       currentMusicianDescription: '',
+                       currentMusicianImageUrl: '',
+                       currentMusicianBandRoles: [],
+                       currentBandId: '',
+                       currentBandName: '',
+                       currentBandImageUrl: '',
+                       currentBandMusicians: []
                    };
 
                    scannedQrCode = changeEventId => e => {
@@ -89,6 +97,31 @@ export default class LoginWithQrCode extends Component {
                            });
                    };
 
+                   render() {
+                       const { scanMode = MODE_SCAN, loading } = this.state;
+
+                       if (loading) {
+                           return <Loading loadingText="Validation Ballot ..." />;
+                       }
+
+                       return (
+                           <View style={styles.scanView}>
+                               <AppConsumer>
+                                   {({ changeEventId }) => {
+                                       if (scanMode === MODE_MANUAL) {
+                                           return this.renderManualInput(changeEventId);
+                                       }
+                                       if (scanMode === MODE_BAND_BROWSER) {
+                                           return this.renderBandBrowser();
+                                       }
+
+                                       return this.renderScanner(changeEventId);
+                                   }}
+                               </AppConsumer>
+                           </View>
+                       );
+                   }
+
                    renderScanner(changeEventId) {
                        return (
                            <QRCodeScanner
@@ -102,8 +135,8 @@ export default class LoginWithQrCode extends Component {
                                        <Button onPress={() => this.setState({ scanMode: MODE_MANUAL })}>
                                            Manual Entry
                                        </Button>
-                                       <Button onPress={() => this.setState({ scanMode: MODE_PHOTOS })}>
-                                           Test Photos
+                                       <Button onPress={() => this.setState({ scanMode: MODE_BAND_BROWSER })}>
+                                           Band Browser
                                        </Button>
                                    </View>
                                }
@@ -184,43 +217,68 @@ export default class LoginWithQrCode extends Component {
                        );
                    }
 
-                   renderPhotos() {
+                   renderBandBrowser() {
                        const queryParams = { eventId: 'event_2019_eugene-make-a-band' };
                        return (
                            <View style={styles.container}>
                                <Modal
                                    animationType="slide"
                                    transparent={false}
-                                   visible={this.state.modalVisible}
+                                   visible={this.state.bandListVisible}
                                    onRequestClose={() => {
                                        Alert.alert('Modal has been closed.');
                                    }}
                                >
                                    <View style={styles.modalContainer}>
-                                       <Text style={styles.topViewText}>{this.state.currentArtistName}</Text>
-                                       <Text style={styles.mediumText}>{this.state.currentArtistId}</Text>
-                                       <Image 
-                                            style={styles.artistImage} 
-                                            source={{ uri: this.state.currentArtistImageUrl }} 
-                                        />
-                                       <TouchableHighlight
-                                           
-                                       >
-                                           <Button 
-                                                style={styles.buttonText}
-                                                onPress={() => {
-                                                    this.setModalVisible(!this.state.modalVisible);
-                                                }}
-                                            >
-                                                Back
-                                            </Button>
+                                       <Text style={styles.topViewText}>{this.state.currentBandName}</Text>
+                                       {this.state.currentBandMusicians.length > 0 ? (
+                                           <FlatList
+                                               data={this.state.currentBandMusicians}
+                                               renderItem={({ item }) => (
+                                                   <TouchableOpacity
+                                                       style={{
+                                                           maxHeight: 20,
+                                                           minHeight: 14,
+                                                           marginTop: 10,
+                                                           marginHorizontal: 20
+                                                       }}
+                                                       onPress={() => {
+                                                           //this.setMusicianPageVisible(true);
+                                                           this.setCurrentMusicianName(item.name);
+                                                           this.setCurrentMusicianId(item.musicianId);
+                                                           this.setCurrentMusicianImageUrl(item.primaryImage.url);
+                                                           this.setCurrentMusicianBandRoles(item.bandRoles);
+                                                           //this.setCurrentMusicianName(item.musicians[0].name);
+                                                       }}
+                                                   >
+                                                       <Text style={styles.mediumText}>{item.name}</Text>
+                                                   </TouchableOpacity>
+                                               )}
+                                           />
+                                       ) : (
+                                           <Text style={styles.mediumText}>No Musicians In This Band?</Text>
+                                       )}
+
+                                       <Image
+                                           style={styles.artistImage}
+                                           source={{ uri: this.state.currentBandImageUrl }}
+                                       />
+                                       <TouchableHighlight>
+                                           <Button
+                                               style={styles.buttonText}
+                                               onPress={() => {
+                                                   this.setBandListVisible(!this.state.bandListVisible);
+                                               }}
+                                           >
+                                               Back
+                                           </Button>
                                        </TouchableHighlight>
                                    </View>
                                </Modal>
 
-                               <Text style={styles.topViewText}>All Musicians:</Text>
+                               <Text style={styles.topViewText}>Eugene Make-A-Band 2019:</Text>
 
-                               {this.DoMusicianQuery(queryParams)}
+                               {this.DoBandMusicianQuery(queryParams)}
 
                                <Button
                                    onPress={() => this.setState({ scanMode: MODE_SCAN })}
@@ -232,36 +290,16 @@ export default class LoginWithQrCode extends Component {
                        );
                    }
 
-
-                   ///////////////////////////////////////////////////
-                   setModalVisible(visible) {
-                       this.setState({modalVisible: visible});
-                   }
-
-                   setCurrentArtistName(name) {
-                       this.setState({currentArtistName: name});
-                   }
-
-                   setCurrentArtistId(id) {
-                       this.setState({currentArtistId: id});
-                   }
-
-                   setCurrentArtistImageUrl(url) {
-                       this.setState({currentArtistImageUrl: url});
-                   }
                    ///////////////////////////////////////////////////
 
-
-
-                   DoMusicianQuery = queryParams => (
-                       <Query query={musicianQuery} variables={queryParams}>
+                   DoBandMusicianQuery = queryParams => (
+                       <Query query={bandMusicianQuery} variables={queryParams}>
                            {({ loading, error, data }) => {
                                if (loading) return null;
                                if (error) return `Error! ${error}`;
                                return (
                                    <FlatList
-                                       data={data.musicians}
-                                       initialNumToRender={20}
+                                       data={data.bands}
                                        horizontal={false}
                                        numColumns={1}
                                        initialScrollIndex={0}
@@ -274,10 +312,12 @@ export default class LoginWithQrCode extends Component {
                                                    marginHorizontal: 20
                                                }}
                                                onPress={() => {
-                                                    this.setModalVisible(true);
-                                                    this.setCurrentArtistName(item.name); 
-                                                    this.setCurrentArtistId(item.musicianId);  
-                                                    this.setCurrentArtistImageUrl(item.primaryImage.url); 
+                                                   this.setBandListVisible(true);
+                                                   this.setCurrentBandName(item.name);
+                                                   this.setCurrentBandId(item.bandId);
+                                                   this.setCurrentBandImageUrl(item.primaryImage.url);
+                                                   this.setCurrentBandMusicians(item.musicians);
+                                                   //this.setCurrentMusicianName(item.musicians[0].name);
                                                }}
                                            >
                                                <Text style={styles.mediumText}>{item.name}</Text>
@@ -289,95 +329,56 @@ export default class LoginWithQrCode extends Component {
                        </Query>
                    );
 
-                   _onPressButton() {
-                       Alert.alert('You tapped the button!');
+                   ///////////////////////////////////////////////////
+
+                   setBandListVisible(visible) {
+                       this.setState({ bandListVisible: visible });
                    }
 
-                   makeFlatList = () => (
-                       <FlatList
-                           data={[{ key: 'Devin' }, { key: 'Jason' }, { key: 'Peter' }]}
-                           renderItem={({ item }) => <Text style={styles.textBold}>{item.key}</Text>}
-                       />
-                   );
-
-                   makeSectionList = () => (
-                       <SectionList
-                           renderItem={({ item, index, section }) => <Text key={index}>{item}</Text>}
-                           renderSectionHeader={({ section: { title } }) => (
-                               <Text style={{ fontWeight: 'bold' }}>{title}</Text>
-                           )}
-                           sections={[
-                               { title: 'Title1', data: ['item1', 'item2'] },
-                               { title: 'Title2', data: ['item3', 'item4'] },
-                               { title: 'Title3', data: ['item5', 'item6'] }
-                           ]}
-                           keyExtractor={(item, index) => item + index}
-                       />
-                   );
-
-                   getEventArtists = ({ eventId }) => (
-                       <Query query={testQuery} variables={{ eventId }}>
-                           {({ loading, error, data }) => {
-                               if (loading) return <Loading />;
-                               if (error) return `Error! ${error}`;
-
-                               return data.artists.map(artist => this.renderMyArtistCard(artist));
-                           }}
-                       </Query>
-                   );
-
-                   renderMyArtistCard(artist) {
-                       const { name, musicianId, primaryImage } = artist;
-
-                       return (
-                           <div
-                               className="artist-card"
-                               key={musicianId}
-                               onClick={this.linkToPage(`/artists/${musicianId}`)}
-                           >
-                               <img className="artist-image" src={primaryImage.url} />
-                               <div className="artist-name">{name}</div>
-                           </div>
-                       );
+                   setMusicianPageVisible(visible) {
+                       this.setState({ musicianPageVisible: visible });
                    }
 
-                   CurrentEventsList = () => (
-                       <Query query={getCurrentEventsQuery}>
-                           {({ loading, error, data }) => {
-                               if (loading) return null;
-                               if (error) return `Error! ${error}`;
+                   //////////////////////////////
 
-                               return <Text style={styles.topViewText}>LA LA LA</Text>;
-                           }}
-                       </Query>
-                   );
-
-                   onMusicianSelected() {}
-
-                   render() {
-                       const { scanMode = MODE_SCAN, loading } = this.state;
-
-                       if (loading) {
-                           return <Loading loadingText="Validation Ballot ..." />;
-                       }
-
-                       return (
-                           <View style={styles.scanView}>
-                               <AppConsumer>
-                                   {({ changeEventId }) => {
-                                       if (scanMode === MODE_MANUAL) {
-                                           return this.renderManualInput(changeEventId);
-                                       }
-                                       if (scanMode === MODE_PHOTOS) {
-                                           return this.renderPhotos();
-                                       }
-
-                                       return this.renderScanner(changeEventId);
-                                   }}
-                               </AppConsumer>
-                           </View>
-                       );
+                   setCurrentMusicianId(id) {
+                       this.setState({ currentMusicianId: id });
                    }
+
+                   setCurrentMusicianName(name) {
+                       this.setState({ currentMusicianName: name });
+                   }
+
+                   setCurrentMusicianDescription(desc) {
+                       this.setState({ currentMusicianDescription: desc });
+                   }
+
+                   setCurrentMusicianImageUrl(url) {
+                       this.setState({ currentMusicianImageUrl: url });
+                   }
+
+                   setCurrentMusicianBandRoles(roles) {
+                       this.setState({ currentMusicianBandRoles: roles });
+                   }
+                   //////////////////////////////
+
+                   setCurrentBandId(id) {
+                       this.setState({ currentBandId: id });
+                   }
+
+                   setCurrentBandName(name) {
+                       this.setState({ currentBandName: name });
+                   }
+
+                   setCurrentBandImageUrl(url) {
+                       this.setState({ currentBandImageUrl: url });
+                   }
+
+                   setCurrentBandMusicians(artists) {
+                       this.setState({ currentBandMusicians: artists }); //(this is an array)
+                   }
+
+                   ///////////////////////////////////////////////////
                }
 
 const styles = StyleSheet.create({

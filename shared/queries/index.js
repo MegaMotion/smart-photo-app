@@ -81,10 +81,12 @@ export const bandQuery = gql`
         bands: getBandsByEvent(eventId: $eventId) {
             name
             bandId
+            primaryImage {
+                url
+            }
         }        
     }
 `;
-
 
 export const musicianQuery = gql`
     query musicianQuery($eventId: String!) {
@@ -96,5 +98,26 @@ export const musicianQuery = gql`
             }
             bandRoles
         }        
+    }
+`;
+
+export const bandMusicianQuery = gql`
+    query bandMusicianQuery($eventId: String!) {
+        bands: getBandsByEvent(eventId: $eventId) {
+            bandId
+            name
+            primaryImage  {
+              url
+            } 
+            musicians {
+                musicianId
+                name
+                description
+                primaryImage  {
+                  url
+                } 
+                bandRoles
+            } 
+        }
     }
 `;
