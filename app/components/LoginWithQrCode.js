@@ -6,12 +6,12 @@ import {
     View,
     Alert,
     ActivityIndicator,
-    SectionList,
     FlatList,
     TouchableOpacity,
     TouchableHighlight,
     Modal,
-    Image
+    Image,
+    LinkingIOS
 } from 'react-native';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 import { Actions } from 'react-native-router-flux';
@@ -51,10 +51,14 @@ export default class LoginWithQrCode extends Component {
                        currentMusicianDescription: '',
                        currentMusicianImageUrl: '',
                        currentMusicianBandRoles: [],
+                       currentMusicianWebsiteUrl: '',
+                       currentMusicianTwitterUrl: '',
+                       currentMusicianInstagramUrl: '',
                        currentBandId: '',
                        currentBandName: '',
                        currentBandImageUrl: '',
-                       currentBandMusicians: []
+                       currentBandMusicians: [],
+                       currentMusicianTalents: []
                    };
 
                    scannedQrCode = changeEventId => e => {
@@ -243,12 +247,18 @@ export default class LoginWithQrCode extends Component {
                                                            marginHorizontal: 20
                                                        }}
                                                        onPress={() => {
-                                                           //this.setMusicianPageVisible(true);
+                                                           this.setMusicianPageVisible(true);
                                                            this.setCurrentMusicianName(item.name);
+                                                           this.setCurrentMusicianDescription(item.description);
                                                            this.setCurrentMusicianId(item.musicianId);
                                                            this.setCurrentMusicianImageUrl(item.primaryImage.url);
                                                            this.setCurrentMusicianBandRoles(item.bandRoles);
-                                                           //this.setCurrentMusicianName(item.musicians[0].name);
+                                                           this.setCurrentMusicianTalents(item.talents);
+                                                           this.setCurrentMusicianWebsiteUrl(item.socialMedia.website);
+                                                           this.setCurrentMusicianTwitterUrl(item.socialMedia.twitter);
+                                                           this.setCurrentMusicianInstagramUrl(
+                                                               item.socialMedia.instagram
+                                                           );
                                                        }}
                                                    >
                                                        <Text style={styles.mediumText}>{item.name}</Text>
@@ -268,6 +278,76 @@ export default class LoginWithQrCode extends Component {
                                                style={styles.buttonText}
                                                onPress={() => {
                                                    this.setBandListVisible(!this.state.bandListVisible);
+                                               }}
+                                           >
+                                               Back
+                                           </Button>
+                                       </TouchableHighlight>
+                                   </View>
+                               </Modal>
+
+                               <Modal
+                                   animationType="slide"
+                                   transparent={false}
+                                   visible={this.state.musicianPageVisible}
+                                   onRequestClose={() => {
+                                       Alert.alert('Modal has been closed.');
+                                   }}
+                               >
+                                   <View style={styles.modalContainer}>
+                                       <Text style={styles.topViewText}>{this.state.currentMusicianName}</Text>
+                                       
+                                           <Text
+                                               style={styles.mediumAnchorText}
+                                               onPress={() => LinkingIOS.openURL(item.socialMedia.website)}
+                                           >
+                                               Website
+                                           </Text>
+                                       
+                                           <Text
+                                               style={styles.mediumAnchorText}
+                                               onPress={() => LinkingIOS.openURL(item.socialMedia.twitter)}
+                                           >
+                                               Twitter
+                                           </Text>
+                                     
+                                           <Text
+                                               style={styles.mediumAnchorText}
+                                               onPress={() => LinkingIOS.openURL(item.socialMedia.instagram)}
+                                           >
+                                               Instagram
+                                           </Text>
+                                    
+
+                                       <Text style={styles.mediumText}>Band Roles</Text>
+
+                                       <FlatList
+                                           data={this.state.currentMusicianBandRoles}
+                                           renderItem={({ item }) => <Text style={styles.mediumBoldText}>{item}</Text>}
+                                       />
+
+                                       <Text style={styles.mediumText}>Talents</Text>
+
+                                       <FlatList
+                                           data={this.state.currentMusicianTalents}
+                                           renderItem={({ item }) => <Text style={styles.mediumBoldText}>{item}</Text>}
+                                       />
+
+                                       <Text style={styles.mediumText}>Description</Text>
+
+                                       <Text style={styles.mediumBoldText}>
+                                           {this.state.currentMusicianDescription}
+                                       </Text>
+
+                                       <Image
+                                           style={styles.artistImage}
+                                           source={{ uri: this.state.currentMusicianImageUrl }}
+                                       />
+                                       <TouchableHighlight>
+                                           <Button
+                                               style={styles.buttonText}
+                                               onPress={() => {
+                                                   this.setMusicianPageVisible(!this.state.musicianPageVisible);
                                                }}
                                            >
                                                Back
@@ -360,6 +440,22 @@ export default class LoginWithQrCode extends Component {
                    setCurrentMusicianBandRoles(roles) {
                        this.setState({ currentMusicianBandRoles: roles });
                    }
+
+                   setCurrentMusicianTalents(roles) {
+                       this.setState({ currentMusicianTalents: roles });
+                   }
+
+                   setCurrentMusicianWebsiteUrl(url) {
+                       this.setState({ currentMusicianWebsiteUrl: url });
+                   }
+
+                   setCurrentMusicianTwitterUrl(url) {
+                       this.setState({ currentMusicianTwitterUrl: url });
+                   }
+
+                   setCurrentMusicianInstagramUrl(url) {
+                       this.setState({ currentMusicianInstagramUrl: url });
+                   }
                    //////////////////////////////
 
                    setCurrentBandId(id) {
@@ -439,6 +535,16 @@ const styles = StyleSheet.create({
         color: highlight
     },
     mediumText: {
+        fontSize: 16,
+        color: highlight,
+        fontWeight: '500'
+    },
+    mediumAnchorText: {
+        fontSize: 16,
+        color: 'blue',
+        fontWeight: '500'
+    },
+    mediumBoldText: {
         fontSize: 16,
         color: highlight
     },

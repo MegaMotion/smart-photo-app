@@ -102,22 +102,28 @@ export const musicianQuery = gql`
 `;
 
 export const bandMusicianQuery = gql`
-    query bandMusicianQuery($eventId: String!) {
-        bands: getBandsByEvent(eventId: $eventId) {
-            bandId
-            name
-            primaryImage  {
-              url
-            } 
-            musicians {
-                musicianId
-                name
-                description
-                primaryImage  {
-                  url
-                } 
-                bandRoles
-            } 
-        }
-    }
-`;
+           query bandMusicianQuery($eventId: String!) {
+               bands: getBandsByEvent(eventId: $eventId) {
+                   bandId
+                   name
+                   primaryImage {
+                       url
+                   }
+                   musicians {
+                       musicianId
+                       name
+                       description
+                       primaryImage {
+                           url
+                       }
+                       bandRoles
+                       talents
+                       socialMedia {
+                           website
+                           twitter
+                           instagram
+                       }
+                   }
+               }
+           }
+       `;
